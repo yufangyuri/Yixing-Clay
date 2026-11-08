@@ -1,0 +1,119 @@
+# YIXING · 紫砂产品交互展示
+
+完整可提交 GitHub 的源码：整机、最新 glb2 内构、双孔锁香舱、独立三层爆炸、动态铜色材质、双语标签、滚动叙事、真实模型 GIF 与持久化编辑后台。
+
+## 本地浏览器部署
+
+安装 Node.js 22 或更新版本，解压后在本目录终端运行：
+
+```sh
+npm ci
+npm run build
+npm start
+```
+
+打开 http://127.0.0.1:4173/ 查看产品，http://127.0.0.1:4173/admin 编辑布局。Windows 可双击 start-local.cmd。终端保持打开，Ctrl+C 停止。不要双击 index.html 当作部署方式。
+
+源码修改后执行 npm run build 并刷新；服务端代码修改后重启。交付 ZIP 已包含三个完整 GLB、字体和 GIF。
+
+## 提交 GitHub
+
+安装 Git 和 Git LFS，先在 GitHub 建一个空仓库：
+
+```sh
+git init
+git lfs install
+git add .
+git commit -m "Add Yixing product experience"
+git branch -M main
+git remote add origin https://github.com/YOUR_ACCOUNT/YOUR_REPOSITORY.git
+git push -u origin main
+```
+
+替换示例仓库地址。爆炸 GLB 约138 MB，必须使用已经配置好的 LFS，不要通过网页逐个上传大文件。GLB、字体和GIF规则在 .gitattributes。官方文档：https://docs.github.com/en/repositories/working-with-files/managing-large-files/configuring-git-large-file-storage
+
+克隆后运行：
+
+```sh
+git clone YOUR_REPOSITORY_URL
+cd YOUR_REPOSITORY_FOLDER
+git lfs install
+git lfs pull
+npm ci
+npm run build
+npm start
+```
+
+npm run check:assets 会发现未下载的 LFS 指针并提示修复。GitHub 源码下载ZIP可能只有指针，优先使用 git clone 和 git lfs pull；本次交付ZIP含真实资产。
+
+## 文件位置
+
+| 文件 | 用途 |
+| --- | --- |
+| app.css 第19行 TYPE SIZE CONTROLS | 导航、二级标题、步骤字号 |
+| src/app.js | 文案和页面UI |
+| src/presentation.js | 胶囊装配、独立内构、粒子 |
+| src/aroma-surface.js | 铜色动态材质 |
+| src/scene.js | 相机、光照、WebGL交互 |
+| assets/brewer.glb | 完整咖啡机 |
+| assets/exploded.glb | 最新 glb2 内构材质副本 |
+| assets/capsule.glb | 双孔紫砂胶囊 |
+| assets/story/ | 两幅真实 WebGL GIF |
+| assets/project-config.json | 打包时已发布名称与布局的初始配置 |
+| server/ 和 serve.mjs | API、模型上传、草稿/发布和历史 |
+
+后台三种模型独立更新，可改中英文名字、分组、位移和标签。保存草稿后发布才更新当前服务器的产品端；发布按钮不表示自动上传互联网。
+
+首次运行创建 .local/backend 数据目录。重新构建不会覆盖已有数据，已存在的后台数据优先于初始配置。迁移时先停服务器，再复制整个数据目录。私有数据、历史、node_modules、密钥和构建产物已由 .gitignore 排除。本包保留打包时的已发布布局，不包含作者后台私有历史或本机评分数据。
+
+## 验证
+
+```sh
+npm test
+npm run test:backend
+npm run test:local
+```
+
+test:local 启动隔离服务，验证真实浏览器中的三个GLB、独立三层控制和后台。Windows 默认使用已安装的 Edge；其他平台使用 Playwright Chromium，可先运行 npx playwright install chromium。测试不会写作者数据，结束自动关闭临时服务。
+
+## 可选 Docker
+
+先拉取真实 LFS 资产，然后：
+
+```sh
+docker build -t yixing-web .
+docker run --rm -p 127.0.0.1:4173:4173 -v yixing-data:/data -e ADMIN_TOKEN=YOUR_LONG_RANDOM_ADMIN_KEY yixing-web
+```
+
+容器监听非回环地址，因此管理密钥至少24位，后台输入同一密钥。持久化命名卷保留后台数据。此 Docker 配置是可选方案，交付时验证的是原生 Node 本地部署。
+
+完整后台需要 Node 与持久化磁盘，不能直接部署到纯静态 GitHub Pages。对外部署需HTTPS和ADMIN_TOKEN；详见 API.md。.env.example 仅为环境变量示例，程序不会自动读取 .env。
+
+## 离线导出
+
+后台可导出自包含HTML；npm run build:standalone 也会生成包含 GLB、字体与GIF的离线网页。文件较大，默认不提交Git，优先使用Node本地部署。
+
+## 资产
+
+模型和设计的权利归原作者；字体和依赖沿用原许可，产品模型和苹方字库未声明为开源公共资产。WebGL与Blender的光照、透射存在差异；锁香动态材质和粒子是视觉机制示意。
+
+## 2026-11-05 品牌生成系统与萃取更新
+
+设计故事为五个独立滚动章节：01 Brand Principle、02 Visual System、03 Generated Identities、04 Packaging Applications、05 Digital Experience。03/04为六茶矩阵；05可在空间香气和实时红模→白模→原材质的注水镜头间切换。渲染过程可暂停、拖动和旋转观察，水流与液面是实时表现，不是工程流体模拟。
+
+Logo按作者提供的P2结构重建，位于 assets/brand-logo.svg 和 src/tea-system.js。六张封膜原纹理在 assets/tea，侧壁为淡青、象牙白、淡稻黄、杏色、玫瑰色、灰褐。
+
+更新胶囊源为“锁香舱和胶囊.glb”：保留6个作者网格，复用此前内嵌材质，运行时补1张独立下封膜，共7个可视网格，按5组检查。滤水球回到顶盖附近。原始作者GLB未修改。
+
+src/aroma-space.js 负责舱外香气，只有X-Ray进度非零时出现，不再覆盖表面；颗粒度越细越弱。src/brand-system.js 是生成系统，src/brew-experience.js 是互斥的研磨/胶囊流程与实际3D温度显示，src/brew-film.js 是连续运镜与渲染过渡。src/aroma-surface.js 为此前未使用的历史实现，不被当前页面引用。
+
+作者给出的YouTube链接读取失败，视觉实现依据本次附图与现有模型；未宣称逐帧复现该视频。
+
+## 1.3.0 · 四项作者修正
+
+- 六茶视觉由 assets/aroma-language.json 驱动，读取作者 YIXING_Aroma_Language.xlsx 的 Teas / Pores 参数。src/tea-identities.js 负责六种真实立体视觉；共享六孔位置、孔径权重和±6%呼吸，不是测量实验结果。
+- 带纹理的包装只在包装矩阵和萃取展示中出现，Material Lab 及数字香气视图保持统一材质。
+- src/capsule-geometry.js 使用真实网格顶/底圈顶点计算半径，防止旋转包围盒放大封膜；运行时上下薄膜配合原侧壁，不修改原始作者GLB。
+- 上封膜、侧壁、下封膜始终作为完整胶囊移动。底部加压盘单独检查，缩小的下封膜贴合胶囊底面。
+- 纹理仅在上下膜平面；侧壁仅用淡青、象牙白、淡稻黄、杏色、玫瑰色、灰白色。
+- src/aroma-space.js 为无虚线的柔和同心晕染带。半径紧随各部件，激活带由顶盖依次向底部收拢，粒子随部件平移。X-Ray归零隐藏波纹。原XLSX保持不变。
